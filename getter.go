@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 )
 
@@ -12,12 +13,14 @@ type ProxyGetter interface {
 	GetProxy(string, error)       // return an usable proxy. if there is not an usable proxy, return "", error
 	CheckProxy(proxy string) bool // check if the proxy is usable
 	EraseProxy(proxy string)      // erase the proxy from the proxy list
+	PushProxy(proxy string)       // push the proxy into the proxy list
 }
 
 type DefaultProxyGetter struct {
 	now                 int // return an proxy in sequence, without using random numbers
 	proxys              []string
 	CheckBeforeGetProxy bool // if true, proxy will be checked for availability before returning; otherwise, it will be returned directly
+	lock                sync.Mutex
 }
 
 func (p *DefaultProxyGetter) GetProxy() (string, error) {
@@ -41,12 +44,22 @@ func (p *DefaultProxyGetter) GetProxy() (string, error) {
 
 // The efficiency is not high when the number of proxies is large
 func (p *DefaultProxyGetter) EraseProxy(proxy string) {
+	p.lock.Lock()
 	for i, v := range p.proxys {
 		if v == proxy {
 			p.proxys = append(p.proxys[:i], p.proxys[i+1:]...)
 			break
 		}
 	}
+	p.lock.Unlock()
+}
+
+func (p *DefaultProxyGetter) PushProxy(proxy string) {
+	p.lock.Lock()
+	if p.CheckProxy(proxy) {
+		p.proxys = append(p.proxys, proxy)
+	}
+	p.lock.Unlock()
 }
 
 func (p *DefaultProxyGetter) CheckProxy(proxyAddr string) bool {
