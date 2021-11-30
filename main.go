@@ -1,9 +1,8 @@
 package main
 
-import "testing"
-
-func TestDecorator(t *testing.T) {
+func main() {
 	var c AutoProxyGetter = &OriAutoProxyGetter{}
-	c = WrapWithTimeDecorator(c, 100)
+	c = WrapWithTimeDecorator(c, 180)
+	c = WrapWithThresholdDecorator(c, 80)
 	c.CrawlProxy("http://www.ip3366.net/?stype=1&page=1")
 }

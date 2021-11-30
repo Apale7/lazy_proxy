@@ -15,6 +15,7 @@ type ProxyGetter interface {
 	CheckProxy(proxy string) bool // check if the proxy is usable
 	EraseProxy(proxy string)      // erase the proxy from the proxy list
 	PushProxy(proxy ...string)    // push the proxy into the proxy list
+	LenOfProxies() int
 }
 
 type DefaultProxyGetter struct {
@@ -104,4 +105,8 @@ func (p *DefaultProxyGetter) CheckExist(proxyAddr string) bool {
 		}
 	}
 	return true
+}
+
+func (p *DefaultProxyGetter) LenOfProxies() int {
+	return len(p.proxies)
 }
