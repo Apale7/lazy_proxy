@@ -13,7 +13,7 @@ import (
 type ProxyGetter interface {
 	GetProxy() (string, error)    // return an usable proxy. if there is not an usable proxy, return "", error
 	CheckProxy(proxy string) bool // check if the proxy is usable
-	EraseProxy(proxy string)      // erase the proxy from the proxy list
+	EraseProxy(proxy string) int      // erase the proxy from the proxy list
 	PushProxy(proxy ...string)    // push the proxy into the proxy list
 	LenOfProxies() int
 }
@@ -45,7 +45,7 @@ func (p *DefaultProxyGetter) GetProxy() (string, error) {
 }
 
 // The efficiency is not high when the number of proxies is large
-func (p *DefaultProxyGetter) EraseProxy(proxy string) {
+func (p *DefaultProxyGetter) EraseProxy(proxy string) int {
 	p.lock.Lock()
 	for i, v := range p.proxies {
 		if v == proxy {
@@ -54,17 +54,26 @@ func (p *DefaultProxyGetter) EraseProxy(proxy string) {
 		}
 	}
 	p.lock.Unlock()
+	return len(p.proxies)
 }
 
 func (p *DefaultProxyGetter) PushProxy(proxy ...string) {
 	p.lock.Lock()
+	limitCh := make(chan struct{}, 30) //限制并发数
+	wg := sync.WaitGroup{}
+	wg.Add(len(proxy))
 	for _, v := range proxy {
-		if p.CheckProxy(v) && p.CheckExist(v) {
-			fmt.Println(v)
-			p.proxies = append(p.proxies, v)
-		}
+		limitCh <- struct{}{}
+		go func(proxyAddr string) {
+			if p.CheckProxy(proxyAddr) && p.CheckExist(proxyAddr) {
+				fmt.Println(proxyAddr)
+				p.proxies = append(p.proxies, proxyAddr)
+			}
+			<-limitCh
+			wg.Done()
+		}(v)
 	}
-
+	wg.Wait()
 	p.lock.Unlock()
 }
 

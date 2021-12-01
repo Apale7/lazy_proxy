@@ -13,16 +13,20 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
-type AutoProxyGetter interface {
-	ProxyGetter
-	CrawlProxy(url string) // Crawl available proxies from the Internet
+type Crawler interface {
+	CrawlProxy() []string // Crawl available proxies from the Internet
 }
 
-type OriAutoProxyGetter struct {
-	DefaultProxyGetter
+type CrawlerIP3366 struct {
+	url string
 }
 
-func (d *OriAutoProxyGetter) CrawlProxy(url string) {
+func (cl *CrawlerIP3366) CrawlProxy() []string {
+	// 爬最大页码
+	//.......
+
+	// 遍历每一页
+	// go func(){爬一页}
 	var i int64 = 2
 	// Init collyCollector
 	c := colly.NewCollector(
@@ -48,7 +52,7 @@ func (d *OriAutoProxyGetter) CrawlProxy(url string) {
 	// 	for _, v := range d.proxies {
 	// 		ipPort = append(ipPort, "socks5://"+v)
 	// 	}
-	// 	rp, err := proxy.RoundRobinProxySwitcher(ipPort...)
+	// 	rp, err := proxy.RoundRobinProxySwitcher(ipPorgetter...)
 	// 	if err != nil {
 	// 		log.Fatal(err)
 	// 	}
@@ -86,10 +90,18 @@ func (d *OriAutoProxyGetter) CrawlProxy(url string) {
 	c.OnScraped(func(r *colly.Response) {
 		fmt.Println("Finished:", r.Request.URL)
 	})
-	c.Visit(url)
+	c.Visit(cl.url)
 	c.Wait()
-	d.PushProxy(proxyList...)
-	fmt.Println("LENGTH OF PROXIES:", len(d.proxies))
+	return proxyList
+}
+type AutoProxyGetter interface {
+	ProxyGetter
+	Crawler
+
+}
+type DefaultAutoProxyGetter struct {
+	crawler Crawler
+	ProxyGetter
 }
 
 type WithTimeDecorator struct {
@@ -97,19 +109,19 @@ type WithTimeDecorator struct {
 	interval int
 }
 
-func WrapWithTimeDecorator(a AutoProxyGetter, interval int) AutoProxyGetter {
-	return &WithTimeDecorator{
+func WrapWithTimeDecorator(a AutoProxyGetter, interval int) *WithTimeDecorator {
+	getter := &WithTimeDecorator{
 		AutoProxyGetter: a,
 		interval:        interval,
 	}
-}
-
-func (t *WithTimeDecorator) CrawlProxy(url string) {
-	timeTickerChan := time.Tick(time.Second * time.Duration(t.interval))
-	for {
-		t.AutoProxyGetter.CrawlProxy(url)
-		<-timeTickerChan
-	}
+	go func() {
+		timeTickerChan := time.Tick(time.Second * time.Duration(getter.interval))
+		for {
+			getter.AutoProxyGetter.CrawlProxy()
+			<-timeTickerChan
+		}
+	}()
+	return getter
 }
 
 type WithThresholdDecorator struct {
@@ -117,15 +129,24 @@ type WithThresholdDecorator struct {
 	threshold int
 }
 
-func WrapWithThresholdDecorator(a AutoProxyGetter, threshold int) AutoProxyGetter {
-	return &WithThresholdDecorator{
+func WrapWithThresholdDecorator(a AutoProxyGetter, threshold int) *WithThresholdDecorator {
+	getter := &WithThresholdDecorator{
 		AutoProxyGetter: a,
 		threshold:       threshold,
 	}
+	go func() {
+		for getter.AutoProxyGetter.LenOfProxies() < getter.threshold {
+			time.Sleep(1 * time.Minute)
+			getter.AutoProxyGetter.crawler.CrawlProxy()
+		}
+	}()
+	return getter
 }
 
-func (t *WithThresholdDecorator) CrawlProxy(url string) {
-	for t.AutoProxyGetter.LenOfProxies() < t.threshold {
-		t.AutoProxyGetter.CrawlProxy(url)
+func (g *WithThresholdDecorator) EraseProxy(proxy string) int {
+	num := g.AutoProxyGetter.EraseProxy(proxy)
+	if num < g.threshold {
+		go g.AutoProxyGetter.crawler.CrawlProxy()
 	}
+	return num
 }

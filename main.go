@@ -1,8 +1,23 @@
 package main
 
+import (
+	"fmt"
+	"time"
+)
+
 func main() {
-	var c AutoProxyGetter = &OriAutoProxyGetter{}
-	c = WrapWithTimeDecorator(c, 180)
+	var c ProxyGetter
+	c = WrapWithTimeDecorator(c, 360)
 	c = WrapWithThresholdDecorator(c, 80)
-	c.CrawlProxy("http://www.ip3366.net/?stype=1&page=1")
+	go func ()  {
+		for {
+			// for c.LenOfProxies() < 90{
+
+			// }
+			p, _ := c.GetProxy()
+			fmt.Printf("c.EraseProxy(p): %v\n", c.EraseProxy(p))
+			time.Sleep(time.Millisecond*500)
+		}
+	}()
+	select {}
 }
