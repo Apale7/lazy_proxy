@@ -13,7 +13,7 @@ import (
 type ProxyGetter interface {
 	GetProxy() (string, error)    // return an usable proxy. if there is not an usable proxy, return "", error
 	CheckProxy(proxy string) bool // check if the proxy is usable
-	EraseProxy(proxy string) int      // erase the proxy from the proxy list
+	EraseProxy(proxy string) int  // erase the proxy from the proxy list
 	PushProxy(proxy ...string)    // push the proxy into the proxy list
 	LenOfProxies() int
 }
@@ -53,6 +53,7 @@ func (p *DefaultProxyGetter) EraseProxy(proxy string) int {
 			break
 		}
 	}
+	p.now -= 1
 	p.lock.Unlock()
 	return len(p.proxies)
 }
