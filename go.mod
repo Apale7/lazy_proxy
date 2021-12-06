@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/antchfx/htmlquery v1.2.4
 	github.com/gocolly/colly/v2 v2.1.0
+	github.com/robfig/cron v1.2.0
 )
 
 require (
