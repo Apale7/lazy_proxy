@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -67,7 +66,6 @@ func (p *DefaultProxyGetter) PushProxy(proxy ...string) {
 		limitCh <- struct{}{}
 		go func(proxyAddr string) {
 			if p.CheckProxy(proxyAddr) && p.CheckExist(proxyAddr) {
-				fmt.Println(proxyAddr)
 				p.proxies = append(p.proxies, proxyAddr)
 			}
 			<-limitCh

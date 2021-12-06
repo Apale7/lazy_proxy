@@ -119,7 +119,6 @@ func WrapWithTimeDecorator(a AutoProxyGetter, interval int) *WithTimeDecorator {
 		timeTickerChan := time.Tick(time.Second * time.Duration(getter.interval))
 		for {
 			proxyList := getter.AutoProxyGetter.CrawlProxy()
-			fmt.Println("TIME TO CRAWL")
 			getter.AutoProxyGetter.PushProxy(proxyList...)
 			<-timeTickerChan
 		}
@@ -140,7 +139,6 @@ func WrapWithThresholdDecorator(a AutoProxyGetter, threshold int) *WithThreshold
 	go func() {
 		for {
 			if getter.AutoProxyGetter.LenOfProxies() < getter.threshold {
-				fmt.Println("THRESHOLD TO CRAWL")
 				proxyList := getter.AutoProxyGetter.CrawlProxy()
 				getter.AutoProxyGetter.PushProxy(proxyList...)
 				time.Sleep(60 * time.Second)
