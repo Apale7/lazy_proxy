@@ -1,4 +1,4 @@
-module lazy_proxy
+module Apale7/lazy_proxy
 
 go 1.17
 
