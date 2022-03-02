@@ -1,4 +1,4 @@
-package main
+package proxy_getter
 
 import (
 	"io/ioutil"
@@ -59,7 +59,7 @@ func (p *DefaultProxyGetter) EraseProxy(proxy string) int {
 
 func (p *DefaultProxyGetter) PushProxy(proxy ...string) {
 	p.lock.Lock()
-	limitCh := make(chan struct{}, 30) //限制并发数
+	limitCh := make(chan struct{}, 30) // 限制并发数
 	wg := sync.WaitGroup{}
 	wg.Add(len(proxy))
 	for _, v := range proxy {
@@ -91,7 +91,7 @@ func (p *DefaultProxyGetter) CheckProxy(proxyAddr string) bool {
 	}
 	res, err := httpClient.Get(httpUrl)
 	if err != nil {
-		//fmt.Println("错误信息：",err)
+		// fmt.Println("错误信息：",err)
 		return false
 	}
 	defer res.Body.Close()
