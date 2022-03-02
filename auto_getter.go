@@ -43,8 +43,8 @@ func (cl *CrawlerIP3366) CrawlProxy() []string {
 		}).DialContext,
 		MaxIdleConns:          10,
 		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 10 * time.Second,
+		TLSHandshakeTimeout:   30 * time.Second,
+		ExpectContinueTimeout: 30 * time.Second,
 	})
 	// flower
 	// if d.proxies != nil && len(d.proxies) != 0 {
