@@ -9,7 +9,7 @@ import (
 func TestDecorator(t *testing.T) {
 	var c AutoProxyGetter = &DefaultAutoProxyGetter{
 		ProxyGetter: &DefaultProxyGetter{},
-		Crawler:     &CrawlerIP3366{url: "http://www.ip3366.net"},
+		Crawler:     &CrawlerIP3366{},
 	}
 	c = WrapWithTimeDecorator(c, 300)
 	c = WrapWithThresholdDecorator(c, 80)
@@ -26,6 +26,6 @@ func TestDecorator(t *testing.T) {
 }
 
 func TestCrawlerIP3366(t *testing.T) {
-	c := &CrawlerIP3366{url: "http://www.ip3366.net"}
+	c := &CrawlerIP3366{}
 	c.CrawlProxy()
 }

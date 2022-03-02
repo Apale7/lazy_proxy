@@ -17,9 +17,7 @@ type Crawler interface {
 	CrawlProxy() []string // Crawl available proxies from the Internet
 }
 
-type CrawlerIP3366 struct {
-	url string
-}
+type CrawlerIP3366 struct{}
 
 func (cl *CrawlerIP3366) CrawlProxy() []string {
 	// 爬最大页码
@@ -90,7 +88,7 @@ func (cl *CrawlerIP3366) CrawlProxy() []string {
 	c.OnScraped(func(r *colly.Response) {
 		fmt.Println("Finished:", r.Request.URL)
 	})
-	c.Visit(cl.url)
+	c.Visit("http://www.ip3366.net")
 	c.Wait()
 	return proxyList
 }
