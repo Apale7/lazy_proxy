@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/Apale7/lazy_proxy/proxy_getter/proxy_crawler"
 )
 
 func TestDecorator(t *testing.T) {
 	var c AutoProxyGetter = &DefaultAutoProxyGetter{
 		ProxyGetter: &DefaultProxyGetter{},
-		Crawler:     &CrawlerIP3366{},
+		Crawler:     &proxy_crawler.CrawlerIP3366{},
 	}
 	c = WrapWithTimeDecorator(c, 300)
 	c = WrapWithThresholdDecorator(c, 80)
@@ -26,6 +28,6 @@ func TestDecorator(t *testing.T) {
 }
 
 func TestCrawlerIP3366(t *testing.T) {
-	c := &CrawlerIP3366{}
+	c := &proxy_crawler.CrawlerIP3366{}
 	c.CrawlProxy()
 }
