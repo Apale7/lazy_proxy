@@ -3,7 +3,7 @@ package proxy_pool
 import (
 	"time"
 
-	"github.com/Apale7/lazy_proxy/proxy_getter/proxy_crawler"
+	"github.com/Apale7/lazy_proxy/proxy_pool/proxy_crawler"
 )
 
 type AutoProxyGetter interface {

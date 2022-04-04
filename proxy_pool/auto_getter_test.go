@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Apale7/lazy_proxy/proxy_getter/proxy_crawler"
+	"github.com/Apale7/lazy_proxy/proxy_pool/proxy_crawler"
 )
 
 func TestDecorator(t *testing.T) {
@@ -14,7 +14,7 @@ func TestDecorator(t *testing.T) {
 		Crawler:   &proxy_crawler.CrawlerKuaidaili{},
 	}
 	// c = WrapWithTimeDecorator(c, 300)
-	c = WrapWithThresholdDecorator(c, 80)
+	c = WrapWithThresholdDecorator(c, 25)
 
 	for c.LenOfProxies() == 0 {
 		time.Sleep(time.Second * 2)

@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/antchfx/htmlquery"
@@ -45,9 +46,13 @@ const (
 	maxPage int64 = 100
 )
 
-type CrawlerKuaidaili struct{}
+type CrawlerKuaidaili struct {
+	mutex sync.Mutex
+}
 
-func (*CrawlerKuaidaili) CrawlProxy() (proxy []string) {
+func (craw *CrawlerKuaidaili) CrawlProxy() (proxy []string) {
+	craw.mutex.Lock()
+	defer craw.mutex.Unlock()
 	c := newCollector()
 	c.OnResponse(func(r *colly.Response) {
 		doc, err := htmlquery.Parse(strings.NewReader((string(r.Body))))
