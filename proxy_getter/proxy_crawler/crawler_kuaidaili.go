@@ -42,7 +42,7 @@ func newCollector() *colly.Collector {
 }
 
 const (
-	maxPage int64 = 4000
+	maxPage int64 = 100
 )
 
 type CrawlerKuaidaili struct{}
@@ -54,10 +54,11 @@ func (*CrawlerKuaidaili) CrawlProxy() (proxy []string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		nodes := htmlquery.Find(doc, `//td[@data-title="IP"]`)
-		proxy = make([]string, len(nodes))
-		for i, node := range nodes {
-			proxy[i] = htmlquery.InnerText(node)
+		portNodes := htmlquery.Find(doc, `//td[@data-title="PORT"]`)
+		IPNodes := htmlquery.Find(doc, `//td[@data-title="IP"]`)
+		proxy = make([]string, len(IPNodes))
+		for i, node := range IPNodes {
+			proxy[i] = htmlquery.InnerText(node) + ":" + htmlquery.InnerText(portNodes[i])
 		}
 	})
 

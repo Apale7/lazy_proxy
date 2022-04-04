@@ -1,4 +1,4 @@
-package proxy_getter
+package proxy_pool
 
 import (
 	"time"
@@ -7,12 +7,12 @@ import (
 )
 
 type AutoProxyGetter interface {
-	ProxyGetter
+	ProxyPool
 	proxy_crawler.Crawler
 }
 
 type DefaultAutoProxyGetter struct {
-	ProxyGetter
+	ProxyPool
 	proxy_crawler.Crawler
 }
 
@@ -54,8 +54,8 @@ func WrapWithThresholdDecorator(a AutoProxyGetter, threshold int) *WithThreshold
 			if getter.AutoProxyGetter.LenOfProxies() < getter.threshold {
 				proxyList := getter.AutoProxyGetter.CrawlProxy()
 				getter.AutoProxyGetter.PushProxy(proxyList...)
-				time.Sleep(60 * time.Second)
 			}
+			time.Sleep(5 * time.Second)
 		}
 	}()
 	return getter

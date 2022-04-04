@@ -1,4 +1,4 @@
-package proxy_getter
+package proxy_pool
 
 import (
 	"io/ioutil"
@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type ProxyGetter interface {
+type ProxyPool interface {
 	GetProxy() (string, error)    // return an usable proxy. if there is not an usable proxy, return "", error
 	CheckProxy(proxy string) bool // check if the proxy is usable
 	EraseProxy(proxy string) int  // erase the proxy from the proxy list
@@ -17,14 +17,14 @@ type ProxyGetter interface {
 	LenOfProxies() int
 }
 
-type DefaultProxyGetter struct {
+type DefaultProxyPool struct {
 	now                 int // return an proxy in sequence, without using random numbers
 	proxies             []string
 	CheckBeforeGetProxy bool // if true, proxy will be checked for availability before returning; otherwise, it will be returned directly
 	lock                sync.Mutex
 }
 
-func (p *DefaultProxyGetter) GetProxy() (string, error) {
+func (p *DefaultProxyPool) GetProxy() (string, error) {
 	if p.proxies == nil || len(p.proxies) == 0 {
 		return "", nil
 	}
@@ -44,7 +44,7 @@ func (p *DefaultProxyGetter) GetProxy() (string, error) {
 }
 
 // The efficiency is not high when the number of proxies is large
-func (p *DefaultProxyGetter) EraseProxy(proxy string) int {
+func (p *DefaultProxyPool) EraseProxy(proxy string) int {
 	p.lock.Lock()
 	for i, v := range p.proxies {
 		if v == proxy {
@@ -57,7 +57,7 @@ func (p *DefaultProxyGetter) EraseProxy(proxy string) int {
 	return len(p.proxies)
 }
 
-func (p *DefaultProxyGetter) PushProxy(proxy ...string) {
+func (p *DefaultProxyPool) PushProxy(proxy ...string) {
 	p.lock.Lock()
 	limitCh := make(chan struct{}, 30) // 限制并发数
 	wg := sync.WaitGroup{}
@@ -76,7 +76,7 @@ func (p *DefaultProxyGetter) PushProxy(proxy ...string) {
 	p.lock.Unlock()
 }
 
-func (p *DefaultProxyGetter) CheckProxy(proxyAddr string) bool {
+func (p *DefaultProxyPool) CheckProxy(proxyAddr string) bool {
 	httpUrl := "http://icanhazip.com"
 	proxy, _ := url.Parse(proxyAddr)
 
@@ -106,7 +106,7 @@ func (p *DefaultProxyGetter) CheckProxy(proxyAddr string) bool {
 	return true
 }
 
-func (p *DefaultProxyGetter) CheckExist(proxyAddr string) bool {
+func (p *DefaultProxyPool) CheckExist(proxyAddr string) bool {
 	for _, v := range p.proxies {
 		if v == proxyAddr {
 			return false
@@ -115,6 +115,6 @@ func (p *DefaultProxyGetter) CheckExist(proxyAddr string) bool {
 	return true
 }
 
-func (p *DefaultProxyGetter) LenOfProxies() int {
+func (p *DefaultProxyPool) LenOfProxies() int {
 	return len(p.proxies)
 }

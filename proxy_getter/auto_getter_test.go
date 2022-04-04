@@ -1,4 +1,4 @@
-package proxy_getter
+package proxy_pool
 
 import (
 	"fmt"
@@ -10,13 +10,17 @@ import (
 
 func TestDecorator(t *testing.T) {
 	var c AutoProxyGetter = &DefaultAutoProxyGetter{
-		ProxyGetter: &DefaultProxyGetter{},
-		Crawler:     &proxy_crawler.CrawlerIP3366{},
+		ProxyPool: &DefaultProxyPool{},
+		Crawler:   &proxy_crawler.CrawlerKuaidaili{},
 	}
-	c = WrapWithTimeDecorator(c, 300)
+	// c = WrapWithTimeDecorator(c, 300)
 	c = WrapWithThresholdDecorator(c, 80)
-	proxyList := c.CrawlProxy()
-	c.PushProxy(proxyList...)
+
+	for c.LenOfProxies() == 0 {
+		time.Sleep(time.Second * 2)
+	}
+	// proxyList := c.CrawlProxy()
+	// c.PushProxy(proxyList...)
 	go func() {
 		for {
 			p, _ := c.GetProxy()
