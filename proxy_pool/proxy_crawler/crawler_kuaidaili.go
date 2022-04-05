@@ -51,7 +51,9 @@ type CrawlerKuaidaili struct {
 }
 
 func (craw *CrawlerKuaidaili) CrawlProxy() (proxy []string) {
-	craw.mutex.Lock()
+	if !craw.mutex.TryLock() {
+		return
+	}
 	defer craw.mutex.Unlock()
 	c := newCollector()
 	c.OnResponse(func(r *colly.Response) {

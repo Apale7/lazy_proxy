@@ -13,14 +13,14 @@ func TestDecorator(t *testing.T) {
 		ProxyPool: &DefaultProxyPool{},
 		Crawler:   &proxy_crawler.CrawlerKuaidaili{},
 	}
-	// c = WrapWithTimeDecorator(c, 300)
+	c = WrapWithTimeDecorator(c, 300)
 	c = WrapWithThresholdDecorator(c, 25)
 
 	for c.LenOfProxies() == 0 {
 		time.Sleep(time.Second * 2)
 	}
-	// proxyList := c.CrawlProxy()
-	// c.PushProxy(proxyList...)
+	proxyList := c.CrawlProxy()
+	c.PushProxy(proxyList...)
 	go func() {
 		for {
 			p, _ := c.GetProxy()
