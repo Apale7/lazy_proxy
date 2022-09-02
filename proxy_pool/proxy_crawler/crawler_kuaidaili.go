@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -15,14 +16,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func newCollector() *colly.Collector {
+func (craw *CrawlerKuaidaili) newCollector() *colly.Collector {
 	c := colly.NewCollector(
 		colly.Async(true),
 		colly.UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36"),
 		colly.AllowURLRevisit(),
 	)
+
+	var proxy func(*http.Request) (*url.URL, error)
+	if len(craw.proxys) > 0 {
+		p, _ := url.Parse(craw.proxys[rand.Intn(len(craw.proxys))])
+		proxy = http.ProxyURL(p)
+	}
+
 	c.WithTransport(&http.Transport{
-		Proxy: http.ProxyFromEnvironment,
+		Proxy: proxy,
 		DialContext: (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
@@ -47,7 +55,8 @@ const (
 )
 
 type CrawlerKuaidaili struct {
-	mutex sync.Mutex
+	mutex  sync.Mutex
+	proxys []string
 }
 
 func (craw *CrawlerKuaidaili) CrawlProxy() (proxy []string) {
@@ -55,7 +64,7 @@ func (craw *CrawlerKuaidaili) CrawlProxy() (proxy []string) {
 		return
 	}
 	defer craw.mutex.Unlock()
-	c := newCollector()
+	c := craw.newCollector()
 	c.OnResponse(func(r *colly.Response) {
 		doc, err := htmlquery.Parse(strings.NewReader((string(r.Body))))
 		if err != nil {
@@ -73,5 +82,7 @@ func (craw *CrawlerKuaidaili) CrawlProxy() (proxy []string) {
 		logrus.Error(err)
 	}
 	c.Wait()
+	craw.proxys = proxy
+
 	return proxy
 }
